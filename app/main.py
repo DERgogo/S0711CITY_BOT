@@ -1,23 +1,22 @@
-import uvicorn
-from app.web import fastapi_app, telegram_app
-from app.config import WEBHOOK_URL
+from fastapi import FastAPI, Request
+from telegram import Update
+from telegram.ext import ApplicationBuilder
+
+from app.config import BOT_TOKEN
+
+telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
+fastapi_app = FastAPI()
 
 
-async def on_startup():
-    await telegram_app.bot.set_webhook(WEBHOOK_URL)
-    print("Webhook gesetzt:", WEBHOOK_URL)
+@fastapi_app.on_event("startup")
+async def startup_event():
+    # Telegram App muss initialisiert werden
+    await telegram_app.initialize()
 
 
-def run():
-    uvicorn.run(
-        "app.web:fastapi_app",
-        host="0.0.0.0",
-        port=8080,
-        reload=False
-    )
-
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(on_startup())
-    run()
+@fastapi_app.post("/")
+async def webhook(request: Request):
+    data = await request.json()
+    update = Update.de_json(data, telegram_app.bot)
+    await telegram_app.process_update(update)
+    return {"status": "ok"}
