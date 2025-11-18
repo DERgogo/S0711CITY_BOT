@@ -21,8 +21,9 @@ def main():
     app.run_webhook(
         listen="0.0.0.0",
         port=8080,
-        url_path="",
+        url_path=""
     )
 
 
 if __name__ == "__main__":
+    main()
