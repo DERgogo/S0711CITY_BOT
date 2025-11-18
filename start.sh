@@ -1,1 +1,2 @@
-python app/main.py
+#!/bin/bash
+python main.py
