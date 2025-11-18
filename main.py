@@ -1,1 +1,1 @@
-from app.config import BOT_TOKEN, WEBHOOK_URL, APP_URL
+from app.handlers.start_handler import get_start_handler
