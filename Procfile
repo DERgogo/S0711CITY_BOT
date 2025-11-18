@@ -1,1 +1,1 @@
-worker: sh start.sh
+worker: python -m app.main
