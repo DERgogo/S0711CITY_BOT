@@ -1,16 +1,15 @@
 from fastapi import FastAPI, Request
-from app.config import WEBHOOK_PATH
-from app.bot import create_bot
+from telegram import Update
+from telegram.ext import ApplicationBuilder
+from app.config import BOT_TOKEN
 
-telegram_app = create_bot()
+telegram_app = ApplicationBuilder().token(BOT_TOKEN).build()
 fastapi_app = FastAPI()
 
-@fastapi_app.get("/healthz")
-async def health():
-    return {"status": "ok"}
 
-@fastapi_app.post(WEBHOOK_PATH)
+@fastapi_app.post("/")
 async def webhook(request: Request):
-    update = await request.json()
-    await telegram_app.update_queue.put(update)
-    return {"ok": True}
+    data = await request.json()
+    update = Update.de_json(data, telegram_app.bot)
+    await telegram_app.process_update(update)
+    return {"status": "ok"}
