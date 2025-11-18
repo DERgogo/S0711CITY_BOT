@@ -1,20 +1,23 @@
-from telegram.ext import ApplicationBuilder
-from app.config import BOT_TOKEN, WEBHOOK_URL
-from app.handlers.start_handler import get_start_handler
+import uvicorn
+from app.web import fastapi_app, telegram_app
+from app.config import WEBHOOK_URL
 
-async def set_webhook(app):
-    await app.bot.set_webhook(url=WEBHOOK_URL)
 
-def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(get_start_handler())
-    app.post_init = set_webhook
+async def on_startup():
+    await telegram_app.bot.set_webhook(WEBHOOK_URL)
+    print("Webhook gesetzt:", WEBHOOK_URL)
 
-    app.run_webhook(
-        listen="0.0.0.0",
+
+def run():
+    uvicorn.run(
+        "app.web:fastapi_app",
+        host="0.0.0.0",
         port=8080,
-        url_path=""
+        reload=False
     )
 
+
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(on_startup())
+    run()
